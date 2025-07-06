@@ -1,44 +1,0 @@
-
-<!DOCTYPE html>
-<html lang="fa">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>مدیریت رمان‌ها - نسخه Firebase</title>
-  <link rel="stylesheet" href="style.css" />
-  <script type="module" src="app.js" defer></script>
-</head>
-<body>
-  <div id="auth-section">
-    <h2>ورود یا ثبت‌نام</h2>
-    <input type="email" id="email" placeholder="ایمیل" />
-    <input type="password" id="password" placeholder="رمز عبور" />
-    <button id="loginBtn">ورود</button>
-    <button id="signupBtn">ثبت‌نام</button>
-  </div>
-
-  <div id="main-section" style="display:none;">
-    <h1>مدیریت رمان‌ها 📚</h1>
-    <button id="logoutBtn">خروج</button>
-    <div class="novel-form">
-      <input type="text" id="novelInput" placeholder="نام رمان" />
-      <select id="genreInput" multiple>
-        <option value="فانتزی">فانتزی</option>
-        <option value="عاشقانه">عاشقانه</option>
-        <option value="تخیلی">تخیلی</option>
-        <option value="جنایی">جنایی</option>
-        <option value="ترسناک">ترسناک</option>
-        <option value="معمایی">معمایی</option>
-        <option value="درام">درام</option>
-        <option value="ماجراجویی">ماجراجویی</option>
-      </select>
-      <div id="linksContainer">
-        <input type="url" class="linkInput" placeholder="لینک مرجع" />
-      </div>
-      <button id="addLinkBtn">➕ افزودن لینک</button>
-      <button id="addNovelBtn">📌 افزودن رمان</button>
-    </div>
-    <div id="novelList"></div>
-  </div>
-</body>
-</html>
