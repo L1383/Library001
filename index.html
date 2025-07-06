@@ -1,0 +1,43 @@
+
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>پیگیری رمان‌ها (چند ژانر و لینک)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>📚 پیگیری رمان‌ها</h1>
+
+  <div class="novel">
+    <input type="text" id="novelInput" placeholder="نام رمان" />
+    <div id="genres">
+      <label><input type="checkbox" value="فانتزی"> فانتزی</label>
+      <label><input type="checkbox" value="عاشقانه"> عاشقانه</label>
+      <label><input type="checkbox" value="علمی‌تخیلی"> علمی‌تخیلی</label>
+      <label><input type="checkbox" value="ماجراجویی"> ماجراجویی</label>
+      <label><input type="checkbox" value="ترسناک"> ترسناک</label>
+      <label><input type="checkbox" value="تاریخی"> تاریخی</label>
+      <label><input type="checkbox" value="درام"> درام</label>
+      <label><input type="checkbox" value="جنایی"> جنایی</label>
+      <label><input type="checkbox" value="معمایی"> معمایی</label>
+      <label><input type="checkbox" value="طنز"> طنز</label>
+      <label><input type="checkbox" value="سیاسی"> سیاسی</label>
+      <label><input type="checkbox" value="روانشناختی"> روانشناختی</label>
+      <label><input type="checkbox" value="اجتماعی"> اجتماعی</label>
+    </div>
+    <input type="number" id="chapterCount" placeholder="تعداد کل فصل‌ها" />
+    <input type="number" id="chaptersRead" placeholder="تعداد فصل‌های خوانده‌شده" />
+    <input type="number" id="ratingInput" placeholder="نمره از 10" step="0.1" />
+    <textarea id="linksInput" placeholder="لینک‌ها (با , جدا شوند)"></textarea>
+    <label><input type="checkbox" id="favoriteInput" /> مورد علاقه</label>
+    <label><input type="checkbox" id="completedInput" /> تکمیل شده</label>
+    <button onclick="addNovel()">➕ افزودن</button>
+  </div>
+
+  <div class="novel-list" id="novelList"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
