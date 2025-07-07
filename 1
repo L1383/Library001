@@ -64,6 +64,7 @@
         window.firebaseConfig = firebaseConfig; // Make firebaseConfig globally accessible
 
         // Make Firebase functions globally accessible for the React script
+        // Explicitly assign imported functions to window object
         window.onAuthStateChanged = onAuthStateChanged;
         window.signInAnonymously = signInAnonymously;
         window.signInWithCustomToken = signInWithCustomToken;
@@ -126,6 +127,11 @@
                             await window.signInAnonymously(window.auth); // Use window.signInAnonymously
                         } catch (error) {
                             console.error("خطا در ورود به سیستم:", error); // Error signing in
+                            if (error.code === 'auth/admin-restricted-operation') {
+                                setErrorMessage("خطا: احراز هویت ناشناس در پروژه Firebase شما فعال نیست. لطفاً به کنسول Firebase بروید، به بخش Authentication > Sign-in method بروید و Anonymous را فعال کنید.");
+                            } else {
+                                setErrorMessage("خطا در ورود به سیستم: " + error.message + ". لطفاً صفحه را رفرش کنید یا اتصال اینترنت خود را بررسی کنید.");
+                            }
                             // If anonymous sign-in fails, use a random ID for unauthenticated users
                             setUserId(crypto.randomUUID());
                         }
