@@ -1,5 +1,5 @@
 
-[<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -816,5 +816,24 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAmZeIOUi-M52OG0eiy5bPFHNydAoqv8hg",
+    authDomain: "library-fbfe6.firebaseapp.com",
+    projectId: "library-fbfe6",
+    storageBucket: "library-fbfe6.firebasestorage.app",
+    messagingSenderId: "446025119683",
+    appId: "1:446025119683:web:9b4db2c4af306c12a66f76",
+    measurementId: "G-X13WFMTPMZ"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+
 </body>
 </html>
