@@ -105,6 +105,7 @@
                 isFavorite: false, // Field for favorite status
                 readingStatus: 'not_started', // New field for reading status: 'not_started', 'reading', 'publishing', 'completed'
                 links: [] // New field for multiple external links (array of strings)
+                // Removed: backgroundColor field
             });
             const [currentGenreInput, setCurrentGenreInput] = React.useState(''); // For the genre input field (before converting to tags)
             const [currentLinkInput, setCurrentLinkInput] = React.useState(''); // For the link input field (before converting to tags)
@@ -167,6 +168,7 @@
                             genres: Array.isArray(doc.data().genres) ? doc.data().genres : (doc.data().genre ? [doc.data().genre] : []),
                             // Ensure links is an array, even if stored as a single string or undefined
                             links: Array.isArray(doc.data().links) ? doc.data().links : (doc.data().link ? [doc.data().link] : [])
+                            // Removed: backgroundColor from fetching and defaulting
                         }));
                         fetchedNovels.sort((a, b) => a.title.localeCompare(b.title));
                         setNovels(fetchedNovels);
@@ -338,7 +340,8 @@
                 setLoading(true);
                 try {
                     const collectionPath = `artifacts/${window.firebaseConfig.appId}/users/${userId}/read_novels`;
-                    const novelData = { ...newNovel, genres: uniqueGenres, links: uniqueLinks }; // Use the processed genres and links arrays
+                    // Removed backgroundColor from the novelData
+                    const novelData = { ...newNovel, genres: uniqueGenres, links: uniqueLinks }; 
 
                     if (editingNovelId) {
                         const novelDocRef = window.doc(dbInstance, collectionPath, editingNovelId);
@@ -348,7 +351,7 @@
                         await window.addDoc(window.collection(dbInstance, collectionPath), novelData);
                     }
                     // Clear the form and reset genre/link input
-                    setNewNovel({ title: '', author: '', genres: [], rating: '', notes: '', chaptersRead: '', totalChapters: '', isFavorite: false, readingStatus: 'not_started', links: [] });
+                    setNewNovel({ title: '', author: '', genres: [], rating: '', notes: '', chaptersRead: '', totalChapters: '', isFavorite: false, readingStatus: 'not_started', links: [] }); // Reset links field
                     setCurrentGenreInput(''); // Clear the current genre input field
                     setCurrentLinkInput(''); // Clear the current link input field
                 } catch (error) {
@@ -381,6 +384,7 @@
                     isFavorite: novel.isFavorite || false,
                     readingStatus: novel.readingStatus || 'not_started', // Populate new field, default to 'not_started'
                     links: novel.links || [] // Populate links field (ensure it's an array)
+                    // Removed: backgroundColor from populating
                 });
                 setCurrentGenreInput(''); // Clear the genre input field when editing
                 setCurrentLinkInput(''); // Clear the link input field when editing
@@ -720,6 +724,7 @@
                                                 ))}
                                             </div>
                                         </div>
+                                        {/* Removed: Color picker input field */}
                                         <div>
                                             <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">یادداشت‌ها:</label>
                                             <textarea
@@ -825,7 +830,11 @@
                                         )}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             {filteredNovels.map(novel => (
-                                                <div key={novel.id} className="bg-purple-50 p-5 rounded-lg shadow-sm border border-purple-200 hover:shadow-md transition duration-200 relative">
+                                                <div 
+                                                    key={novel.id} 
+                                                    className="bg-purple-50 p-5 rounded-lg shadow-sm border border-purple-200 hover:shadow-md transition duration-200 relative"
+                                                    // Removed: style attribute for backgroundColor
+                                                >
                                                     {/* Favorite and Reading Status Icons */}
                                                     <div className="absolute top-3 left-3 flex space-x-2 rtl:space-x-reverse">
                                                         <button
