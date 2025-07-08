@@ -1,4 +1,4 @@
-# Library001
+#Library001
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -97,14 +97,19 @@
             const [newNovel, setNewNovel] = React.useState({ // Stores data for a new novel
                 title: '',
                 author: '',
-                genre: '',
+                genres: [], // Genres are now an array of strings
                 rating: '',
                 notes: '',
                 chaptersRead: '',
                 totalChapters: '',
                 isFavorite: false, // Field for favorite status
-                readingStatus: 'not_started' // New field for reading status: 'not_started', 'reading', 'publishing', 'completed'
+                readingStatus: 'not_started', // New field for reading status: 'not_started', 'reading', 'publishing', 'completed'
+                links: [] // New field for multiple external links (array of strings)
             });
+            const [currentGenreInput, setCurrentGenreInput] = React.useState(''); // For the genre input field (before converting to tags)
+            const [currentLinkInput, setCurrentLinkInput] = React.useState(''); // For the link input field (before converting to tags)
+
+
             const [editingNovelId, setEditingNovelId] = React.useState(null); // ID of the novel being edited
             const [confirmDeleteId, setConfirmDeleteId] = React.useState(null); // ID of the novel pending deletion confirmation
             const [loading, setLoading] = React.useState(true); // Loading state
@@ -151,13 +156,17 @@
             React.useEffect(() => {
                 if (dbInstance && userId && isAuthReady) {
                     // Use firebaseConfig.appId instead of projectId for standalone
-                    const novelCollectionRef = window.collection(dbInstance, `artifacts/${window.firebaseConfig.appId}/users/${userId}/read_novels`); // Changed from projectId to appId
+                    const novelCollectionRef = window.collection(dbInstance, `artifacts/${window.firebaseConfig.appId}/users/${userId}/read_novels`);
                     const q = window.query(novelCollectionRef);
 
                     const unsubscribe = window.onSnapshot(q, (snapshot) => {
                         const fetchedNovels = snapshot.docs.map(doc => ({
                             id: doc.id,
-                            ...doc.data()
+                            ...doc.data(),
+                            // Ensure genres is an array, even if stored as a single string or undefined
+                            genres: Array.isArray(doc.data().genres) ? doc.data().genres : (doc.data().genre ? [doc.data().genre] : []),
+                            // Ensure links is an array, even if stored as a single string or undefined
+                            links: Array.isArray(doc.data().links) ? doc.data().links : (doc.data().link ? [doc.data().link] : [])
                         }));
                         fetchedNovels.sort((a, b) => a.title.localeCompare(b.title));
                         setNovels(fetchedNovels);
@@ -176,12 +185,63 @@
                 }
             }, [dbInstance, userId, isAuthReady]);
 
-            // Handle input changes in the form
+            // Handle input changes for general form fields
             const handleChange = (e) => {
                 const { name, value, type, checked } = e.target;
                 setNewNovel(prev => ({
                     ...prev,
                     [name]: type === 'checkbox' ? checked : value
+                }));
+            };
+
+            // Handle adding genre tags from the input field
+            const handleAddGenreTag = (e) => {
+                // Add tag on Enter key press or comma input
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault(); // Prevent form submission
+                    const input = currentGenreInput.trim();
+                    if (input) {
+                        // Split by comma and trim each part, filter out empty strings
+                        const newTags = input.split(',').map(tag => tag.trim()).filter(Boolean);
+                        setNewNovel(prev => {
+                            // Add new tags to existing genres, ensuring uniqueness
+                            const updatedGenres = [...new Set([...prev.genres, ...newTags])];
+                            return { ...prev, genres: updatedGenres };
+                        });
+                        setCurrentGenreInput(''); // Clear the input field
+                    }
+                }
+            };
+
+            // Handle removing a genre tag
+            const handleRemoveGenreTag = (genreToRemove) => {
+                setNewNovel(prev => ({
+                    ...prev,
+                    genres: prev.genres.filter(genre => genre !== genreToRemove)
+                }));
+            };
+
+            // Handle adding link tags from the input field
+            const handleAddLinkTag = (e) => {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const input = currentLinkInput.trim();
+                    if (input) {
+                        const newLinks = input.split(',').map(link => link.trim()).filter(Boolean);
+                        setNewNovel(prev => {
+                            const updatedLinks = [...new Set([...prev.links, ...newLinks])];
+                            return { ...prev, links: updatedLinks };
+                        });
+                        setCurrentLinkInput('');
+                    }
+                }
+            };
+
+            // Handle removing a link tag
+            const handleRemoveLinkTag = (linkToRemove) => {
+                setNewNovel(prev => ({
+                    ...prev,
+                    links: prev.links.filter(link => link !== linkToRemove)
                 }));
             };
 
@@ -221,10 +281,10 @@
                         case 'auth/weak-password':
                             userFriendlyMessage = "رمز عبور باید حداقل ۶ کاراکتر باشد.";
                             break;
-                        case 'auth/invalid-credential': // Specific handling for invalid-credential
+                        case 'auth/invalid-credential':
                             userFriendlyMessage = "ایمیل یا رمز عبور اشتباه است. لطفاً دوباره بررسی کنید.";
                             break;
-                        case 'auth/network-request-failed': // Handle network issues
+                        case 'auth/network-request-failed':
                             userFriendlyMessage = "خطای شبکه. لطفاً اتصال اینترنت خود را بررسی کنید.";
                             break;
                         default:
@@ -259,24 +319,46 @@
                     return;
                 }
 
+                // Final check for any remaining text in currentGenreInput and add as tags
+                const genresToSave = [...newNovel.genres];
+                if (currentGenreInput.trim() !== '') {
+                    const newTags = currentGenreInput.split(',').map(tag => tag.trim()).filter(Boolean);
+                    genresToSave.push(...newTags);
+                }
+                const uniqueGenres = [...new Set(genresToSave)].filter(Boolean); // Ensure uniqueness and remove empty strings
+
+                // Final check for any remaining text in currentLinkInput and add as tags
+                const linksToSave = [...newNovel.links];
+                if (currentLinkInput.trim() !== '') {
+                    const newLinks = currentLinkInput.split(',').map(link => link.trim()).filter(Boolean);
+                    linksToSave.push(...newLinks);
+                }
+                const uniqueLinks = [...new Set(linksToSave)].filter(Boolean); // Ensure uniqueness and remove empty strings
+
                 setLoading(true);
                 try {
-                    const collectionPath = `artifacts/${window.firebaseConfig.appId}/users/${userId}/read_novels`; // Changed to appId
+                    const collectionPath = `artifacts/${window.firebaseConfig.appId}/users/${userId}/read_novels`;
+                    const novelData = { ...newNovel, genres: uniqueGenres, links: uniqueLinks }; // Use the processed genres and links arrays
+
                     if (editingNovelId) {
                         const novelDocRef = window.doc(dbInstance, collectionPath, editingNovelId);
-                        await window.updateDoc(novelDocRef, newNovel);
+                        await window.updateDoc(novelDocRef, novelData);
                         setEditingNovelId(null); // Exit edit mode
                     } else {
-                        await window.addDoc(window.collection(dbInstance, collectionPath), newNovel);
+                        await window.addDoc(window.collection(dbInstance, collectionPath), novelData);
                     }
-                    // Clear the form
-                    setNewNovel({ title: '', author: '', genre: '', rating: '', notes: '', chaptersRead: '', totalChapters: '', isFavorite: false, readingStatus: 'not_started' });
+                    // Clear the form and reset genre/link input
+                    setNewNovel({ title: '', author: '', genres: [], rating: '', notes: '', chaptersRead: '', totalChapters: '', isFavorite: false, readingStatus: 'not_started', links: [] });
+                    setCurrentGenreInput(''); // Clear the current genre input field
+                    setCurrentLinkInput(''); // Clear the current link input field
                 } catch (error) {
                     console.error("خطا در افزودن/به‌روزرسانی رمان:", error);
                     if (error.code === 'not-found' && editingNovelId) {
                         setErrorMessage("خطا: رمان مورد نظر برای ویرایش یافت نشد. ممکن است توسط شخص دیگری یا از طریق کنسول حذف شده باشد.");
                         setEditingNovelId(null); // Reset editing state
-                        setNewNovel({ title: '', author: '', genre: '', rating: '', notes: '', chaptersRead: '', totalChapters: '', isFavorite: false, readingStatus: 'not_started' }); // Clear form
+                        setNewNovel({ title: '', author: '', genres: [], rating: '', notes: '', chaptersRead: '', totalChapters: '', isFavorite: false, readingStatus: 'not_started', links: [] }); // Clear form and links
+                        setCurrentGenreInput('');
+                        setCurrentLinkInput('');
                     } else {
                         setErrorMessage("خطا در عملیات: " + error.message);
                     }
@@ -291,20 +373,25 @@
                 setNewNovel({
                     title: novel.title,
                     author: novel.author,
-                    genre: novel.genre,
+                    genres: novel.genres || [], // Ensure genres is an array
                     rating: novel.rating || '',
                     notes: novel.notes,
                     chaptersRead: novel.chaptersRead || '',
                     totalChapters: novel.totalChapters || '',
                     isFavorite: novel.isFavorite || false,
-                    readingStatus: novel.readingStatus || 'not_started' // Populate new field, default to 'not_started'
+                    readingStatus: novel.readingStatus || 'not_started', // Populate new field, default to 'not_started'
+                    links: novel.links || [] // Populate links field (ensure it's an array)
                 });
+                setCurrentGenreInput(''); // Clear the genre input field when editing
+                setCurrentLinkInput(''); // Clear the link input field when editing
             };
 
             // Cancel editing and clear the form
             const handleCancelEdit = () => {
                 setEditingNovelId(null);
-                setNewNovel({ title: '', author: '', genre: '', rating: '', notes: '', chaptersRead: '', totalChapters: '', isFavorite: false, readingStatus: 'not_started' });
+                setNewNovel({ title: '', author: '', genres: [], rating: '', notes: '', chaptersRead: '', totalChapters: '', isFavorite: false, readingStatus: 'not_started', links: [] }); // Clear links field
+                setCurrentGenreInput(''); // Clear the genre input field
+                setCurrentLinkInput(''); // Clear the link input field
             };
 
             // Show delete confirmation modal
@@ -321,7 +408,7 @@
 
                 setLoading(true);
                 try {
-                    const collectionPath = `artifacts/${window.firebaseConfig.appId}/users/${userId}/read_novels`; // Changed to appId
+                    const collectionPath = `artifacts/${window.firebaseConfig.appId}/users/${userId}/read_novels`;
                     await window.deleteDoc(window.doc(dbInstance, collectionPath, confirmDeleteId));
                     setConfirmDeleteId(null); // Close confirmation modal
                 } catch (error) {
@@ -342,7 +429,7 @@
                 if (!dbInstance || !userId) return;
                 setLoading(true);
                 try {
-                    const novelDocRef = window.doc(dbInstance, `artifacts/${window.firebaseConfig.appId}/users/${userId}/read_novels`, novelId); // Changed to appId
+                    const novelDocRef = window.doc(dbInstance, `artifacts/${window.firebaseConfig.appId}/users/${userId}/read_novels`, novelId);
                     await window.updateDoc(novelDocRef, { isFavorite: !currentStatus });
                 } catch (error) {
                     console.error("خطا در به‌روزرسانی وضعیت مورد علاقه:", error);
@@ -354,13 +441,16 @@
 
             // Filtered novels based on search term and filters
             const filteredNovels = novels.filter(novel => {
-                // Search filter
+                // Search filter (now includes searching within genre array and links array)
                 const matchesSearch = novel.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                       novel.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                      novel.notes.toLowerCase().includes(searchTerm.toLowerCase());
+                                      novel.notes.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                      (novel.genres && novel.genres.some(g => g.toLowerCase().includes(searchTerm.toLowerCase()))) ||
+                                      (novel.links && novel.links.some(l => l.toLowerCase().includes(searchTerm.toLowerCase())));
 
-                // Genre filter
-                const matchesGenre = filterGenre === 'همه' || (novel.genre && novel.genre.toLowerCase() === filterGenre.toLowerCase());
+
+                // Genre filter (checks if the novel's genres array includes the selected filter genre)
+                const matchesGenre = filterGenre === 'همه' || (novel.genres && novel.genres.some(g => g.toLowerCase() === filterGenre.toLowerCase()));
 
                 // Reading Status filter
                 const matchesReadingStatus = filterReadingStatus === 'همه' || novel.readingStatus === filterReadingStatus;
@@ -372,7 +462,15 @@
             });
 
             // Extract unique genres for the filter dropdown
-            const uniqueGenres = ['همه', ...new Set(novels.map(novel => novel.genre).filter(Boolean))];
+            // This will now collect all unique genres from all novels, including custom ones
+            const allAvailableGenresForFilter = ['همه', ...new Set(novels.flatMap(novel => novel.genres).filter(Boolean))];
+            // Sort the filter genres alphabetically, keeping 'همه' at the beginning
+            allAvailableGenresForFilter.sort((a, b) => {
+                if (a === 'همه') return -1;
+                if (b === 'همه') return 1;
+                return a.localeCompare(b);
+            });
+
 
             // Render the application UI
             return (
@@ -498,16 +596,30 @@
                                             />
                                         </div>
                                         <div>
-                                            <label htmlFor="genre" className="block text-sm font-medium text-gray-700 mb-1">ژانر:</label>
+                                            <label htmlFor="genreInput" className="block text-sm font-medium text-gray-700 mb-1">ژانرها (با کاما جدا کنید):</label>
                                             <input
                                                 type="text"
-                                                id="genre"
-                                                name="genre"
-                                                value={newNovel.genre}
-                                                onChange={handleChange}
-                                                placeholder="مثال: فانتزی، علمی تخیلی"
+                                                id="genreInput"
+                                                value={currentGenreInput}
+                                                onChange={(e) => setCurrentGenreInput(e.target.value)}
+                                                onKeyDown={handleAddGenreTag}
+                                                placeholder="مثال: فانتزی، علمی تخیلی، درام"
                                                 className="w-full px-4 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
                                             />
+                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                {newNovel.genres.map((genre, index) => (
+                                                    <span key={index} className="bg-purple-200 text-purple-800 text-sm font-medium px-3 py-1 rounded-full flex items-center">
+                                                        {genre}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveGenreTag(genre)}
+                                                            className="ml-2 text-purple-600 hover:text-purple-900 focus:outline-none"
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    </span>
+                                                ))}
+                                            </div>
                                         </div>
                                         <div>
                                             <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-1">امتیاز (۱-۱۰):</label>
@@ -519,6 +631,7 @@
                                                 onChange={handleChange}
                                                 min="1"
                                                 max="10"
+                                                step="0.5" 
                                                 placeholder="امتیاز خود را از ۱ تا ۱۰ وارد کنید"
                                                 className="w-full px-4 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
                                             />
@@ -582,6 +695,32 @@
                                             </div>
                                         </div>
                                         <div>
+                                            <label htmlFor="linkInput" className="block text-sm font-medium text-gray-700 mb-1">لینک‌ها (با کاما جدا کنید، اختیاری):</label>
+                                            <input
+                                                type="text"
+                                                id="linkInput"
+                                                value={currentLinkInput}
+                                                onChange={(e) => setCurrentLinkInput(e.target.value)}
+                                                onKeyDown={handleAddLinkTag}
+                                                placeholder="مثال: https://example.com/novel, https://another.link"
+                                                className="w-full px-4 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                                            />
+                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                {newNovel.links.map((link, index) => (
+                                                    <span key={index} className="bg-blue-200 text-blue-800 text-sm font-medium px-3 py-1 rounded-full flex items-center">
+                                                        <a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-800 hover:underline break-all">{link}</a>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveLinkTag(link)}
+                                                            className="ml-2 text-blue-600 hover:text-blue-900 focus:outline-none"
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div>
                                             <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">یادداشت‌ها:</label>
                                             <textarea
                                                 id="notes"
@@ -636,7 +775,8 @@
                                                     onChange={(e) => setFilterGenre(e.target.value)}
                                                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
                                                 >
-                                                    {uniqueGenres.map(genre => (
+                                                    <option value="همه">همه</option>
+                                                    {allAvailableGenresForFilter.filter(g => g !== 'همه').map(genre => (
                                                         <option key={genre} value={genre}>{genre}</option>
                                                     ))}
                                                 </select>
@@ -721,9 +861,9 @@
                                                     <p className="text-gray-700 mb-1 text-right">
                                                         <span className="font-medium">نویسنده:</span> {novel.author}
                                                     </p>
-                                                    {novel.genre && (
+                                                    {novel.genres && novel.genres.length > 0 && ( // Display all genres joined by comma
                                                         <p className="text-gray-700 mb-1 text-right">
-                                                            <span className="font-medium">ژانر:</span> {novel.genre}
+                                                            <span className="font-medium">ژانر:</span> {novel.genres.join(', ')}
                                                         </p>
                                                     )}
                                                     {novel.rating && (
@@ -744,6 +884,18 @@
                                                         {novel.readingStatus === 'publishing' && ' در حال انتشار'}
                                                         {novel.readingStatus === 'completed' && ' تکمیل شده'}
                                                     </p>
+                                                    {novel.links && novel.links.length > 0 && ( // Display all links
+                                                        <div className="text-gray-700 mb-1 text-right">
+                                                            <span className="font-medium">لینک‌ها:</span> 
+                                                            <div className="flex flex-wrap gap-1 mt-1">
+                                                                {novel.links.map((link, index) => (
+                                                                    <a key={index} href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all text-sm">
+                                                                        {link}
+                                                                    </a>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                     {novel.notes && (
                                                         <p className="text-gray-700 text-sm italic mt-2 border-t border-purple-200 pt-2 text-right">
                                                             <span className="font-medium not-italic">یادداشت‌ها:</span> {novel.notes}
