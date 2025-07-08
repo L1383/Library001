@@ -1,4 +1,4 @@
-# Library001
+# library001
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -50,7 +50,8 @@
             onAuthStateChanged,
             createUserWithEmailAndPassword, // New import for signup
             signInWithEmailAndPassword,     // New import for login
-            signOut                         // New import for logout
+            signOut,
+            sendPasswordResetEmail          // New import for password reset
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
@@ -79,6 +80,7 @@
         window.createUserWithEmailAndPassword = createUserWithEmailAndPassword; // Make signup function global
         window.signInWithEmailAndPassword = signInWithEmailAndPassword;     // Make login function global
         window.signOut = signOut;                                           // Make logout function global
+        window.sendPasswordResetEmail = sendPasswordResetEmail;             // Make password reset function global
         window.collection = collection;
         window.addDoc = addDoc;
         window.onSnapshot = onSnapshot;
@@ -105,7 +107,6 @@
                 isFavorite: false, // Field for favorite status
                 readingStatus: 'not_started', // New field for reading status: 'not_started', 'reading', 'publishing', 'completed'
                 links: [] // New field for multiple external links (array of strings)
-                // Removed: backgroundColor field
             });
             const [currentGenreInput, setCurrentGenreInput] = React.useState(''); // For the genre input field (before converting to tags)
             const [currentLinkInput, setCurrentLinkInput] = React.useState(''); // For the link input field (before converting to tags)
@@ -120,6 +121,7 @@
             const [isAuthReady, setIsAuthReady] = React.useState(false); // Flag to check if Firebase Auth is ready
             const [errorMessage, setErrorMessage] = React.useState(null); // State for general error messages
             const [authErrorMessage, setAuthErrorMessage] = React.useState(null); // State for authentication specific error messages
+            const [passwordResetMessage, setPasswordResetMessage] = React.useState(null); // State for password reset messages
 
             // New state variables for authentication
             const [email, setEmail] = React.useState('');
@@ -168,7 +170,6 @@
                             genres: Array.isArray(doc.data().genres) ? doc.data().genres : (doc.data().genre ? [doc.data().genre] : []),
                             // Ensure links is an array, even if stored as a single string or undefined
                             links: Array.isArray(doc.data().links) ? doc.data().links : (doc.data().link ? [doc.data().link] : [])
-                            // Removed: backgroundColor from fetching and defaulting
                         }));
                         fetchedNovels.sort((a, b) => a.title.localeCompare(b.title));
                         setNovels(fetchedNovels);
@@ -251,6 +252,7 @@
             const handleAuthSubmit = async (e) => {
                 e.preventDefault();
                 setAuthErrorMessage(null); // Clear previous auth errors
+                setPasswordResetMessage(null); // Clear password reset messages
                 setLoading(true);
                 try {
                     if (isLoginMode) {
@@ -291,6 +293,41 @@
                             break;
                         default:
                             userFriendlyMessage = "خطای ناشناخته در احراز هویت: " + error.message;
+                    }
+                    setAuthErrorMessage(userFriendlyMessage);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            // Handle password reset request
+            const handlePasswordReset = async () => {
+                setAuthErrorMessage(null); // Clear previous auth errors
+                setPasswordResetMessage(null); // Clear previous password reset messages
+                if (!email) {
+                    setAuthErrorMessage("لطفاً ایمیل خود را برای بازیابی رمز عبور وارد کنید.");
+                    return;
+                }
+                setLoading(true);
+                try {
+                    await window.sendPasswordResetEmail(authInstance, email);
+                    setPasswordResetMessage("ایمیل بازیابی رمز عبور به آدرس " + email + " ارسال شد. لطفاً صندوق ورودی خود را بررسی کنید.");
+                    setEmail(''); // Clear email field after sending
+                } catch (error) {
+                    console.error("خطا در ارسال ایمیل بازیابی رمز عبور:", error);
+                    let userFriendlyMessage = "خطا در ارسال ایمیل بازیابی رمز عبور. لطفاً دوباره تلاش کنید.";
+                    switch (error.code) {
+                        case 'auth/invalid-email':
+                            userFriendlyMessage = "ایمیل نامعتبر است.";
+                            break;
+                        case 'auth/user-not-found':
+                            userFriendlyMessage = "کاربری با این ایمیل یافت نشد.";
+                            break;
+                        case 'auth/network-request-failed':
+                            userFriendlyMessage = "خطای شبکه. لطفاً اتصال اینترنت خود را بررسی کنید.";
+                            break;
+                        default:
+                            userFriendlyMessage = "خطای ناشناخته در بازیابی رمز عبور: " + error.message;
                     }
                     setAuthErrorMessage(userFriendlyMessage);
                 } finally {
@@ -340,7 +377,6 @@
                 setLoading(true);
                 try {
                     const collectionPath = `artifacts/${window.firebaseConfig.appId}/users/${userId}/read_novels`;
-                    // Removed backgroundColor from the novelData
                     const novelData = { ...newNovel, genres: uniqueGenres, links: uniqueLinks }; 
 
                     if (editingNovelId) {
@@ -351,7 +387,7 @@
                         await window.addDoc(window.collection(dbInstance, collectionPath), novelData);
                     }
                     // Clear the form and reset genre/link input
-                    setNewNovel({ title: '', author: '', genres: [], rating: '', notes: '', chaptersRead: '', totalChapters: '', isFavorite: false, readingStatus: 'not_started', links: [] }); // Reset links field
+                    setNewNovel({ title: '', author: '', genres: [], rating: '', notes: '', chaptersRead: '', totalChapters: '', isFavorite: false, readingStatus: 'not_started', links: [] }); 
                     setCurrentGenreInput(''); // Clear the current genre input field
                     setCurrentLinkInput(''); // Clear the current link input field
                 } catch (error) {
@@ -359,7 +395,7 @@
                     if (error.code === 'not-found' && editingNovelId) {
                         setErrorMessage("خطا: رمان مورد نظر برای ویرایش یافت نشد. ممکن است توسط شخص دیگری یا از طریق کنسول حذف شده باشد.");
                         setEditingNovelId(null); // Reset editing state
-                        setNewNovel({ title: '', author: '', genres: [], rating: '', notes: '', chaptersRead: '', totalChapters: '', isFavorite: false, readingStatus: 'not_started', links: [] }); // Clear form and links
+                        setNewNovel({ title: '', author: '', genres: [], rating: '', notes: '', chaptersRead: '', totalChapters: '', isFavorite: false, readingStatus: 'not_started', links: [] }); 
                         setCurrentGenreInput('');
                         setCurrentLinkInput('');
                     } else {
@@ -384,7 +420,6 @@
                     isFavorite: novel.isFavorite || false,
                     readingStatus: novel.readingStatus || 'not_started', // Populate new field, default to 'not_started'
                     links: novel.links || [] // Populate links field (ensure it's an array)
-                    // Removed: backgroundColor from populating
                 });
                 setCurrentGenreInput(''); // Clear the genre input field when editing
                 setCurrentLinkInput(''); // Clear the link input field when editing
@@ -393,7 +428,7 @@
             // Cancel editing and clear the form
             const handleCancelEdit = () => {
                 setEditingNovelId(null);
-                setNewNovel({ title: '', author: '', genres: [], rating: '', notes: '', chaptersRead: '', totalChapters: '', isFavorite: false, readingStatus: 'not_started', links: [] }); // Clear links field
+                setNewNovel({ title: '', author: '', genres: [], rating: '', notes: '', chaptersRead: '', totalChapters: '', isFavorite: false, readingStatus: 'not_started', links: [] }); 
                 setCurrentGenreInput(''); // Clear the genre input field
                 setCurrentLinkInput(''); // Clear the link input field
             };
@@ -530,6 +565,9 @@
                                         {authErrorMessage && (
                                             <p className="text-red-600 text-sm text-center">{authErrorMessage}</p>
                                         )}
+                                        {passwordResetMessage && (
+                                            <p className="text-green-600 text-sm text-center">{passwordResetMessage}</p>
+                                        )}
                                         <div className="flex justify-center space-x-4 rtl:space-x-reverse">
                                             <button
                                                 type="submit"
@@ -547,6 +585,15 @@
                                         >
                                             {isLoginMode ? 'حساب کاربری ندارید؟ ثبت‌نام کنید.' : 'قبلاً حساب کاربری دارید؟ وارد شوید.'}
                                         </button>
+                                        {isLoginMode && (
+                                            <button
+                                                onClick={handlePasswordReset}
+                                                className="block w-full mt-2 text-sm text-purple-500 hover:text-purple-700 font-semibold transition duration-200"
+                                                disabled={loading}
+                                            >
+                                                رمز عبور خود را فراموش کرده‌اید؟
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             );
@@ -724,7 +771,6 @@
                                                 ))}
                                             </div>
                                         </div>
-                                        {/* Removed: Color picker input field */}
                                         <div>
                                             <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">یادداشت‌ها:</label>
                                             <textarea
@@ -832,8 +878,7 @@
                                             {filteredNovels.map(novel => (
                                                 <div 
                                                     key={novel.id} 
-                                                    className="bg-purple-50 p-5 rounded-lg shadow-sm border border-purple-200 hover:shadow-md transition duration-200 relative"
-                                                    // Removed: style attribute for backgroundColor
+                                                    className="bg-purple-50 p-5 rounded-lg shadow-sm border border-purple-200 hover:shadow-md transition duration-200 relative flex flex-col items-end"
                                                 >
                                                     {/* Favorite and Reading Status Icons */}
                                                     <div className="absolute top-3 left-3 flex space-x-2 rtl:space-x-reverse">
@@ -866,27 +911,27 @@
                                                         )}
                                                     </div>
 
-                                                    <h3 className="text-xl font-semibold text-purple-800 mb-2 text-right">{novel.title}</h3>
-                                                    <p className="text-gray-700 mb-1 text-right">
+                                                    <h3 className="text-xl font-semibold text-purple-800 mb-2 text-right w-full">{novel.title}</h3>
+                                                    <p className="text-gray-700 mb-1 text-right w-full">
                                                         <span className="font-medium">نویسنده:</span> {novel.author}
                                                     </p>
                                                     {novel.genres && novel.genres.length > 0 && ( // Display all genres joined by comma
-                                                        <p className="text-gray-700 mb-1 text-right">
+                                                        <p className="text-gray-700 mb-1 text-right w-full">
                                                             <span className="font-medium">ژانر:</span> {novel.genres.join(', ')}
                                                         </p>
                                                     )}
                                                     {novel.rating && (
-                                                        <p className="text-gray-700 mb-1 text-right">
+                                                        <p className="text-gray-700 mb-1 text-right w-full">
                                                             <span className="font-medium">امتیاز:</span> {novel.rating} / ۱۰
                                                         </p>
                                                     )}
                                                     {/* Display chapters read information */}
                                                     {(novel.chaptersRead && novel.totalChapters) && (
-                                                        <p className="text-gray-700 mb-1 text-right">
+                                                        <p className="text-gray-700 mb-1 text-right w-full">
                                                             <span className="font-medium">فصل‌های خوانده شده:</span> {novel.chaptersRead} از {novel.totalChapters}
                                                         </p>
                                                     )}
-                                                    <p className="text-gray-700 mb-1 text-right">
+                                                    <p className="text-gray-700 mb-1 text-right w-full">
                                                         <span className="font-medium">وضعیت:</span>
                                                         {novel.readingStatus === 'not_started' && ' هنوز شروع نشده'}
                                                         {novel.readingStatus === 'reading' && ' در حال مطالعه'}
@@ -894,9 +939,9 @@
                                                         {novel.readingStatus === 'completed' && ' تکمیل شده'}
                                                     </p>
                                                     {novel.links && novel.links.length > 0 && ( // Display all links
-                                                        <div className="text-gray-700 mb-1 text-right">
+                                                        <div className="text-gray-700 mb-1 text-right w-full">
                                                             <span className="font-medium">لینک‌ها:</span> 
-                                                            <div className="flex flex-wrap gap-1 mt-1">
+                                                            <div className="flex flex-wrap gap-1 mt-1 justify-end">
                                                                 {novel.links.map((link, index) => (
                                                                     <a key={index} href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all text-sm">
                                                                         {link}
@@ -906,11 +951,11 @@
                                                         </div>
                                                     )}
                                                     {novel.notes && (
-                                                        <p className="text-gray-700 text-sm italic mt-2 border-t border-purple-200 pt-2 text-right">
+                                                        <p className="text-gray-700 text-sm italic mt-2 border-t border-purple-200 pt-2 text-right w-full">
                                                             <span className="font-medium not-italic">یادداشت‌ها:</span> {novel.notes}
                                                         </p>
                                                     )}
-                                                    <div className="flex justify-end space-x-2 rtl:space-x-reverse mt-4">
+                                                    <div className="flex justify-end space-x-2 rtl:space-x-reverse mt-4 w-full">
                                                         <button
                                                             onClick={() => handleEditClick(novel)}
                                                             className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-sm shadow-md transform hover:scale-105 transition duration-300"
