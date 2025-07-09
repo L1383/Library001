@@ -65,6 +65,7 @@
             appId: "1:446025119683:web:9b4db2c4af306c12a66f76",
             measurementId: "G-X13WFMTPMZ"
         };
+        console.log("Firebase Config:", firebaseConfig); // For debugging purposes
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -423,6 +424,7 @@
                 });
                 setCurrentGenreInput(''); // Clear the genre input field when editing
                 setCurrentLinkInput(''); // Clear the link input field when editing
+                window.scrollTo(0, 0); // Scroll to the top of the page
             };
 
             // Cancel editing and clear the form
@@ -513,28 +515,28 @@
 
             // Render the application UI
             return (
-                <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-2xl p-8 space-y-8">
-                    <h1 className="text-4xl font-extrabold text-center text-purple-700 mb-8">
-                        <i className="fas fa-book-reader mr-3"></i> رمان‌هایی که خوانده‌ام
+                <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-2xl p-4 sm:p-8 space-y-8">
+                    <h1 className="text-3xl sm:text-4xl font-extrabold text-center text-purple-700 mb-6 sm:mb-8">
+                        <i className="fas fa-book-reader mr-2 sm:mr-3"></i> رمان‌هایی که خوانده‌ام
                     </h1>
 
                     {/* Loading Indicator */}
                     {loading && (
                         <div className="flex justify-center items-center py-4">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-purple-500"></div>
-                            <p className="ml-4 text-lg text-purple-600">در حال بارگذاری...</p>
+                            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-4 border-purple-500"></div>
+                            <p className="ml-3 sm:ml-4 text-base sm:text-lg text-purple-600">در حال بارگذاری...</p>
                         </div>
                     )}
 
                     {/* Conditional rendering based on authentication state */}
                     {(() => {
                         if (!isAuthReady) {
-                            return <div className="text-center text-gray-500 text-lg">در حال آماده‌سازی احراز هویت...</div>;
+                            return <div className="text-center text-gray-500 text-base sm:text-lg">در حال آماده‌سازی احراز هویت...</div>;
                         } else if (!userId) {
                             return (
                                 /* Authentication Forms (Login/Signup) */
-                                <div className="bg-purple-50 p-6 rounded-lg shadow-md space-y-4">
-                                    <h2 className="text-2xl font-bold text-purple-600 text-center mb-4">
+                                <div className="bg-purple-50 p-4 sm:p-6 rounded-lg shadow-md space-y-4">
+                                    <h2 className="text-xl sm:text-2xl font-bold text-purple-600 text-center mb-4">
                                         {isLoginMode ? 'ورود به حساب کاربری' : 'ثبت‌نام حساب جدید'}
                                     </h2>
                                     <form onSubmit={handleAuthSubmit} className="space-y-4">
@@ -546,7 +548,7 @@
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 placeholder="ایمیل خود را وارد کنید"
-                                                className="w-full px-4 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                                                className="w-full px-3 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
                                                 required
                                             />
                                         </div>
@@ -558,20 +560,20 @@
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 placeholder="رمز عبور خود را وارد کنید"
-                                                className="w-full px-4 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                                                className="w-full px-3 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
                                                 required
                                             />
                                         </div>
                                         {authErrorMessage && (
-                                            <p className="text-red-600 text-sm text-center">{authErrorMessage}</p>
+                                            <p className="text-red-600 text-xs sm:text-sm text-center">{authErrorMessage}</p>
                                         )}
                                         {passwordResetMessage && (
-                                            <p className="text-green-600 text-sm text-center">{passwordResetMessage}</p>
+                                            <p className="text-green-600 text-xs sm:text-sm text-center">{passwordResetMessage}</p>
                                         )}
-                                        <div className="flex justify-center space-x-4 rtl:space-x-reverse">
+                                        <div className="flex justify-center space-x-3 rtl:space-x-reverse">
                                             <button
                                                 type="submit"
-                                                className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg transform hover:scale-105 transition duration-300"
+                                                className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-5 sm:px-6 rounded-lg shadow-lg transform hover:scale-105 transition duration-300 text-sm sm:text-base"
                                                 disabled={loading}
                                             >
                                                 {isLoginMode ? 'ورود' : 'ثبت‌نام'}
@@ -581,14 +583,14 @@
                                     <div className="text-center mt-4">
                                         <button
                                             onClick={() => setIsLoginMode(!isLoginMode)}
-                                            className="text-purple-600 hover:text-purple-800 font-semibold transition duration-200"
+                                            className="text-purple-600 hover:text-purple-800 font-semibold transition duration-200 text-sm sm:text-base"
                                         >
                                             {isLoginMode ? 'حساب کاربری ندارید؟ ثبت‌نام کنید.' : 'قبلاً حساب کاربری دارید؟ وارد شوید.'}
                                         </button>
                                         {isLoginMode && (
                                             <button
                                                 onClick={handlePasswordReset}
-                                                className="block w-full mt-2 text-sm text-purple-500 hover:text-purple-700 font-semibold transition duration-200"
+                                                className="block w-full mt-2 text-xs sm:text-sm text-purple-500 hover:text-purple-700 font-semibold transition duration-200"
                                                 disabled={loading}
                                             >
                                                 رمز عبور خود را فراموش کرده‌اید؟
@@ -603,12 +605,12 @@
                                 <>
                                     {/* Display User ID and Logout Button */}
                                     <div className="flex justify-between items-center bg-purple-50 p-3 rounded-lg shadow-inner mb-6">
-                                        <p className="font-semibold text-sm text-gray-600">
+                                        <p className="font-semibold text-xs sm:text-sm text-gray-600">
                                             شناسه کاربری شما: <span className="break-all font-mono text-purple-800">{userId}</span>
                                         </p>
                                         <button
                                             onClick={handleLogout}
-                                            className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-4 rounded-lg shadow-md transform hover:scale-105 transition duration-300"
+                                            className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 sm:px-4 rounded-lg shadow-md transform hover:scale-105 transition duration-300 text-xs sm:text-sm"
                                             disabled={loading}
                                         >
                                             خروج
@@ -616,8 +618,8 @@
                                     </div>
 
                                     {/* Form to Add/Edit Novels */}
-                                    <form onSubmit={handleSubmit} className="bg-purple-50 p-6 rounded-lg shadow-md space-y-4">
-                                        <h2 className="text-2xl font-bold text-purple-600 text-center mb-4">
+                                    <form onSubmit={handleSubmit} className="bg-purple-50 p-4 sm:p-6 rounded-lg shadow-md space-y-4">
+                                        <h2 className="text-xl sm:text-2xl font-bold text-purple-600 text-center mb-4">
                                             {editingNovelId ? 'ویرایش رمان' : 'افزودن رمان جدید'}
                                         </h2>
                                         <div>
@@ -629,7 +631,7 @@
                                                 value={newNovel.title}
                                                 onChange={handleChange}
                                                 placeholder="نام رمان را وارد کنید"
-                                                className="w-full px-4 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                                                className="w-full px-3 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
                                                 required
                                             />
                                         </div>
@@ -642,7 +644,7 @@
                                                 value={newNovel.author}
                                                 onChange={handleChange}
                                                 placeholder="نام نویسنده را وارد کنید"
-                                                className="w-full px-4 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                                                className="w-full px-3 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
                                                 required
                                             />
                                         </div>
@@ -655,16 +657,16 @@
                                                 onChange={(e) => setCurrentGenreInput(e.target.value)}
                                                 onKeyDown={handleAddGenreTag}
                                                 placeholder="مثال: فانتزی، علمی تخیلی، درام"
-                                                className="w-full px-4 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                                                className="w-full px-3 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
                                             />
                                             <div className="mt-2 flex flex-wrap gap-2">
                                                 {newNovel.genres.map((genre, index) => (
-                                                    <span key={index} className="bg-purple-200 text-purple-800 text-sm font-medium px-3 py-1 rounded-full flex items-center">
+                                                    <span key={index} className="bg-purple-200 text-purple-800 text-xs sm:text-sm font-medium px-2 py-1 rounded-full flex items-center">
                                                         {genre}
                                                         <button
                                                             type="button"
                                                             onClick={() => handleRemoveGenreTag(genre)}
-                                                            className="ml-2 text-purple-600 hover:text-purple-900 focus:outline-none"
+                                                            className="ml-1 sm:ml-2 text-purple-600 hover:text-purple-900 focus:outline-none text-sm"
                                                         >
                                                             &times;
                                                         </button>
@@ -684,11 +686,11 @@
                                                 max="10"
                                                 step="0.5" 
                                                 placeholder="امتیاز خود را از ۱ تا ۱۰ وارد کنید"
-                                                className="w-full px-4 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                                                className="w-full px-3 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
                                             />
                                         </div>
                                         {/* Input fields for chapters read and total chapters */}
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div>
                                                 <label htmlFor="chaptersRead" className="block text-sm font-medium text-gray-700 mb-1">فصل‌های خوانده شده:</label>
                                                 <input
@@ -699,7 +701,7 @@
                                                     onChange={handleChange}
                                                     min="0"
                                                     placeholder="تعداد فصل‌های خوانده شده"
-                                                    className="w-full px-4 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                                                    className="w-full px-3 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
                                                 />
                                             </div>
                                             <div>
@@ -712,12 +714,12 @@
                                                     onChange={handleChange}
                                                     min="1"
                                                     placeholder="تعداد کل فصل‌ها"
-                                                    className="w-full px-4 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                                                    className="w-full px-3 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
                                                 />
                                             </div>
                                         </div>
                                         {/* Checkbox for Favorite and Dropdown for Reading Status */}
-                                        <div className="flex items-center space-x-4 rtl:space-x-reverse">
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 rtl:space-x-reverse">
                                             <div className="flex items-center">
                                                 <input
                                                     type="checkbox"
@@ -736,7 +738,7 @@
                                                     name="readingStatus"
                                                     value={newNovel.readingStatus}
                                                     onChange={handleChange}
-                                                    className="px-4 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                                                    className="px-3 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
                                                 >
                                                     <option value="not_started">هنوز شروع نشده</option>
                                                     <option value="reading">در حال مطالعه</option>
@@ -754,16 +756,16 @@
                                                 onChange={(e) => setCurrentLinkInput(e.target.value)}
                                                 onKeyDown={handleAddLinkTag}
                                                 placeholder="مثال: https://example.com/novel, https://another.link"
-                                                className="w-full px-4 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                                                className="w-full px-3 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
                                             />
                                             <div className="mt-2 flex flex-wrap gap-2">
                                                 {newNovel.links.map((link, index) => (
-                                                    <span key={index} className="bg-blue-200 text-blue-800 text-sm font-medium px-3 py-1 rounded-full flex items-center">
+                                                    <span key={index} className="bg-blue-200 text-blue-800 text-xs sm:text-sm font-medium px-2 py-1 rounded-full flex items-center">
                                                         <a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-800 hover:underline break-all">{link}</a>
                                                         <button
                                                             type="button"
                                                             onClick={() => handleRemoveLinkTag(link)}
-                                                            className="ml-2 text-blue-600 hover:text-blue-900 focus:outline-none"
+                                                            className="ml-1 sm:ml-2 text-blue-600 hover:text-blue-900 focus:outline-none text-sm"
                                                         >
                                                             &times;
                                                         </button>
@@ -780,13 +782,13 @@
                                                 onChange={handleChange}
                                                 rows="3"
                                                 placeholder="یادداشت‌های خود را درباره رمان بنویسید"
-                                                className="w-full px-4 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                                                className="w-full px-3 py-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
                                             ></textarea>
                                         </div>
-                                        <div className="flex justify-center space-x-4 rtl:space-x-reverse">
+                                        <div className="flex justify-center space-x-3 rtl:space-x-reverse">
                                             <button
                                                 type="submit"
-                                                className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg transform hover:scale-105 transition duration-300"
+                                                className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-5 sm:px-6 rounded-lg shadow-lg transform hover:scale-105 transition duration-300 text-sm sm:text-base"
                                                 disabled={loading}
                                             >
                                                 {editingNovelId ? 'ذخیره تغییرات' : 'افزودن رمان'}
@@ -795,7 +797,7 @@
                                                 <button
                                                     type="button"
                                                     onClick={handleCancelEdit}
-                                                    className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg shadow-lg transform hover:scale-105 transition duration-300"
+                                                    className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-5 sm:px-6 rounded-lg shadow-lg transform hover:scale-105 transition duration-300 text-sm sm:text-base"
                                                     disabled={loading}
                                                 >
                                                     لغو
@@ -805,8 +807,8 @@
                                     </form>
 
                                     {/* Search and Filter Section */}
-                                    <div className="bg-white p-6 rounded-lg shadow-md space-y-4">
-                                        <h2 className="text-2xl font-bold text-purple-600 text-center mb-4">
+                                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md space-y-4">
+                                        <h2 className="text-xl sm:text-2xl font-bold text-purple-600 text-center mb-4">
                                             جستجو و فیلتر
                                         </h2>
                                         <input
@@ -814,7 +816,7 @@
                                             placeholder="جستجو بر اساس عنوان، نویسنده یا یادداشت‌ها..."
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
                                         />
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             {/* Genre Filter */}
@@ -824,7 +826,7 @@
                                                     id="filterGenre"
                                                     value={filterGenre}
                                                     onChange={(e) => setFilterGenre(e.target.value)}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
                                                 >
                                                     <option value="همه">همه</option>
                                                     {allAvailableGenresForFilter.filter(g => g !== 'همه').map(genre => (
@@ -839,7 +841,7 @@
                                                     id="filterReadingStatus"
                                                     value={filterReadingStatus}
                                                     onChange={(e) => setFilterReadingStatus(e.target.value)}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 text-sm sm:text-base"
                                                 >
                                                     <option value="همه">همه</option>
                                                     <option value="completed">تکمیل شده</option>
@@ -857,81 +859,81 @@
                                                     onChange={(e) => setShowFavorites(e.target.checked)}
                                                     className="h-5 w-5 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
                                                 />
-                                                <label htmlFor="showFavorites" className="ml-2 text-base font-medium text-gray-700">فقط مورد علاقه</label>
+                                                <label htmlFor="showFavorites" className="ml-2 text-sm sm:text-base font-medium text-gray-700">فقط مورد علاقه</label>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* List of Novels */}
-                                    <div className="bg-white p-6 rounded-lg shadow-md">
-                                        <h2 className="text-2xl font-bold text-purple-600 text-center mb-6">
+                                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+                                        <h2 className="text-xl sm:text-2xl font-bold text-purple-600 text-center mb-6">
                                             رمان‌های خوانده شده شما
                                         </h2>
                                         {/* Display total number of novels */}
-                                        <p className="text-center text-lg text-gray-700 mb-4">
+                                        <p className="text-center text-base sm:text-lg text-gray-700 mb-4">
                                             شما تاکنون <span className="font-bold text-purple-700">{filteredNovels.length}</span> رمان (از {novels.length} کل) را مشاهده می‌کنید.
                                         </p>
                                         {filteredNovels.length === 0 && !loading && (
-                                            <p className="text-center text-gray-500 text-lg">رمانی با این فیلترها یافت نشد.</p>
+                                            <p className="text-center text-gray-500 text-base sm:text-lg">رمانی با این فیلترها یافت نشد.</p>
                                         )}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                             {filteredNovels.map(novel => (
                                                 <div 
                                                     key={novel.id} 
-                                                    className="bg-purple-50 p-5 rounded-lg shadow-sm border border-purple-200 hover:shadow-md transition duration-200 relative flex flex-col items-end"
+                                                    className="bg-purple-50 p-4 rounded-lg shadow-sm border border-purple-200 hover:shadow-md transition duration-200 relative flex flex-col items-end"
                                                 >
                                                     {/* Favorite and Reading Status Icons */}
                                                     <div className="absolute top-3 left-3 flex space-x-2 rtl:space-x-reverse">
                                                         <button
                                                             onClick={() => toggleFavorite(novel.id, novel.isFavorite)}
-                                                            className={`text-xl ${novel.isFavorite ? 'text-pink-500' : 'text-gray-400 hover:text-pink-400'} transition duration-200`}
+                                                            className={`text-lg sm:text-xl ${novel.isFavorite ? 'text-pink-500' : 'text-gray-400 hover:text-pink-400'} transition duration-200`}
                                                             title={novel.isFavorite ? 'حذف از مورد علاقه' : 'افزودن به مورد علاقه'}
                                                         >
                                                             <i className="fas fa-heart"></i>
                                                         </button>
                                                         {novel.readingStatus === 'completed' && (
-                                                            <span className="text-xl text-green-500" title="تکمیل شده">
+                                                            <span className="text-lg sm:text-xl text-green-500" title="تکمیل شده">
                                                                 <i className="fas fa-check-circle"></i>
                                                             </span>
                                                         )}
                                                         {novel.readingStatus === 'publishing' && (
-                                                            <span className="text-xl text-blue-500" title="در حال انتشار">
+                                                            <span className="text-lg sm:text-xl text-blue-500" title="در حال انتشار">
                                                                 <i className="fas fa-sync-alt"></i> {/* Icon for publishing/in progress */}
                                                             </span>
                                                         )}
                                                         {novel.readingStatus === 'reading' && (
-                                                            <span className="text-xl text-yellow-500" title="در حال مطالعه">
+                                                            <span className="text-lg sm:text-xl text-yellow-500" title="در حال مطالعه">
                                                                 <i className="fas fa-book-open"></i> {/* Icon for reading */}
                                                             </span>
                                                         )}
                                                         {novel.readingStatus === 'not_started' && (
-                                                            <span className="text-xl text-gray-500" title="هنوز شروع نشده">
+                                                            <span className="text-lg sm:text-xl text-gray-500" title="هنوز شروع نشده">
                                                                 <i className="fas fa-hourglass-start"></i> {/* Icon for not started */}
                                                             </span>
                                                         )}
                                                     </div>
 
-                                                    <h3 className="text-xl font-semibold text-purple-800 mb-2 text-right w-full">{novel.title}</h3>
-                                                    <p className="text-gray-700 mb-1 text-right w-full">
+                                                    <h3 className="text-lg sm:text-xl font-semibold text-purple-800 mb-2 text-right w-full">{novel.title}</h3>
+                                                    <p className="text-sm sm:text-base text-gray-700 mb-1 text-right w-full">
                                                         <span className="font-medium">نویسنده:</span> {novel.author}
                                                     </p>
                                                     {novel.genres && novel.genres.length > 0 && ( // Display all genres joined by comma
-                                                        <p className="text-gray-700 mb-1 text-right w-full">
+                                                        <p className="text-sm sm:text-base text-gray-700 mb-1 text-right w-full">
                                                             <span className="font-medium">ژانر:</span> {novel.genres.join(', ')}
                                                         </p>
                                                     )}
                                                     {novel.rating && (
-                                                        <p className="text-gray-700 mb-1 text-right w-full">
+                                                        <p className="text-sm sm:text-base text-gray-700 mb-1 text-right w-full">
                                                             <span className="font-medium">امتیاز:</span> {novel.rating} / ۱۰
                                                         </p>
                                                     )}
                                                     {/* Display chapters read information */}
                                                     {(novel.chaptersRead && novel.totalChapters) && (
-                                                        <p className="text-gray-700 mb-1 text-right w-full">
+                                                        <p className="text-sm sm:text-base text-gray-700 mb-1 text-right w-full">
                                                             <span className="font-medium">فصل‌های خوانده شده:</span> {novel.chaptersRead} از {novel.totalChapters}
                                                         </p>
                                                     )}
-                                                    <p className="text-gray-700 mb-1 text-right w-full">
+                                                    <p className="text-sm sm:text-base text-gray-700 mb-1 text-right w-full">
                                                         <span className="font-medium">وضعیت:</span>
                                                         {novel.readingStatus === 'not_started' && ' هنوز شروع نشده'}
                                                         {novel.readingStatus === 'reading' && ' در حال مطالعه'}
@@ -943,7 +945,7 @@
                                                             <span className="font-medium">لینک‌ها:</span> 
                                                             <div className="flex flex-wrap gap-1 mt-1 justify-end">
                                                                 {novel.links.map((link, index) => (
-                                                                    <a key={index} href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all text-sm">
+                                                                    <a key={index} href={link} target="_blank" rel="noopener noreferrer" className="text-xs sm:text-sm text-blue-600 hover:underline break-all">
                                                                         {link}
                                                                     </a>
                                                                 ))}
@@ -951,20 +953,20 @@
                                                         </div>
                                                     )}
                                                     {novel.notes && (
-                                                        <p className="text-gray-700 text-sm italic mt-2 border-t border-purple-200 pt-2 text-right w-full">
+                                                        <p className="text-xs sm:text-sm italic mt-2 border-t border-purple-200 pt-2 text-right w-full">
                                                             <span className="font-medium not-italic">یادداشت‌ها:</span> {novel.notes}
                                                         </p>
                                                     )}
                                                     <div className="flex justify-end space-x-2 rtl:space-x-reverse mt-4 w-full">
                                                         <button
                                                             onClick={() => handleEditClick(novel)}
-                                                            className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-sm shadow-md transform hover:scale-105 transition duration-300"
+                                                            className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-xs sm:text-sm shadow-md transform hover:scale-105 transition duration-300"
                                                         >
                                                             ویرایش
                                                         </button>
                                                         <button
                                                             onClick={() => handleDeleteClick(novel.id)}
-                                                            className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-md text-sm shadow-md transform hover:scale-105 transition duration-300"
+                                                            className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-md text-xs sm:text-sm shadow-md transform hover:scale-105 transition duration-300"
                                                         >
                                                             حذف
                                                         </button>
@@ -980,21 +982,21 @@
 
                     {/* Delete Confirmation Modal */}
                     {confirmDeleteId && (
-                        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
-                            <div className="bg-white p-8 rounded-lg shadow-xl text-center max-w-sm mx-auto">
-                                <h3 className="text-xl font-bold text-gray-800 mb-4">تایید حذف</h3>
-                                <p className="text-gray-600 mb-6">آیا مطمئن هستید که می‌خواهید این رمان را حذف کنید؟</p>
-                                <div className="flex justify-center space-x-4 rtl:space-x-reverse">
+                        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white p-6 sm:p-8 rounded-lg shadow-xl text-center max-w-sm mx-auto">
+                                <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">تایید حذف</h3>
+                                <p className="text-sm sm:text-base text-gray-600 mb-6">آیا مطمئن هستید که می‌خواهید این رمان را حذف کنید؟</p>
+                                <div className="flex justify-center space-x-3 rtl:space-x-reverse">
                                     <button
                                         onClick={handleConfirmDelete}
-                                        className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-lg shadow-md transform hover:scale-105 transition duration-300"
+                                        className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 sm:px-5 rounded-lg shadow-md transform hover:scale-105 transition duration-300 text-sm sm:text-base"
                                         disabled={loading}
                                     >
                                         بله، حذف کن
                                     </button>
                                     <button
                                         onClick={() => setConfirmDeleteId(null)}
-                                        className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-5 rounded-lg shadow-md transform hover:scale-105 transition duration-300"
+                                        className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 sm:px-5 rounded-lg shadow-md transform hover:scale-105 transition duration-300 text-sm sm:text-base"
                                         disabled={loading}
                                     >
                                         لغو
@@ -1006,13 +1008,20 @@
 
                     {/* Error Message Modal */}
                     {errorMessage && (
-                        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
-                            <div className="bg-white p-8 rounded-lg shadow-xl text-center max-w-sm mx-auto">
-                                <h3 className="text-xl font-bold text-red-700 mb-4">خطا</h3>
-                                <p className="text-gray-600 mb-6">{errorMessage}</p>
+                        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white p-6 sm:p-8 rounded-lg shadow-xl text-center max-w-sm mx-auto">
+                                <h3 className="text-xl sm:text-2xl font-bold text-red-700 mb-4">خطا</h3>
+                                {errorMessage.includes("Firestore backend") || errorMessage.includes("Internet connection") ? (
+                                    <p className="text-gray-600 mb-6">
+                                        به نظر می‌رسد مشکلی در اتصال اینترنت شما وجود دارد یا سرور فایربیس در دسترس نیست.
+                                        لطفاً اتصال اینترنت خود را بررسی کرده و دوباره امتحان کنید.
+                                    </p>
+                                ) : (
+                                    <p className="text-gray-600 mb-6">{errorMessage}</p>
+                                )}
                                 <button
                                     onClick={() => setErrorMessage(null)}
-                                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-5 rounded-lg shadow-md transform hover:scale-105 transition duration-300"
+                                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 sm:px-5 rounded-lg shadow-md transform hover:scale-105 transition duration-300 text-sm sm:text-base"
                                 >
                                     باشه
                                 </button>
